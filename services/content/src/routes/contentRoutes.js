@@ -7,8 +7,13 @@ function createContentRoutes() {
 
   router.post("/generate", async (req, res) => {
     const prompt = req.body?.prompt || "";
-    const drafts = await generateDrafts(prompt);
-    res.json({ ok: true, drafts });
+    try {
+      const drafts = await generateDrafts(prompt);
+      res.json({ ok: true, drafts });
+    } catch (err) {
+      console.error("[content] /generate error:", err.message);
+      res.status(500).json({ ok: false, message: err.message });
+    }
   });
 
   router.post("/revise", async (req, res) => {

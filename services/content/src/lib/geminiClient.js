@@ -20,7 +20,7 @@ async function callGemini(promptText) {
     generationConfig: {
       temperature: 0.7,
       topP: 0.95,
-      maxOutputTokens: 256
+      maxOutputTokens: 1024
     }
   };
 
@@ -51,38 +51,6 @@ function parseJsonArray(text) {
   }
 }
 
-function extractTopic(prompt) {
-  let t = String(prompt || "").trim();
-  if (!t) return "";
-
-  // If user wrote 'about', take the substring after the first 'about'
-  const aboutMatch = t.match(/\babout\b/i);
-  if (aboutMatch) {
-    t = t.substring(aboutMatch.index + aboutMatch[0].length).trim();
-  } else {
-    // Remove common request prefixes like 'write a post for linkedin' etc.
-    t = t.replace(/write\s+(me\s+)?(a|an)?\s*(linkedin\s+)?post(\s+for)?/i, "").trim();
-    t = t.replace(/for\s+linkedin/i, "").trim();
-  }
-
-  // Remove explicit length instructions like 'in 150 words'
-  t = t.replace(/\bin\s+\d+\s*words\b/i, "").trim();
-
-  // Truncate to a safe length
-  if (t.length > 240) t = t.slice(0, 240).trim();
-
-  return t || prompt;
-}
-
-function fallbackDrafts(prompt) {
-  const topic = extractTopic(prompt);
-  return [
-    `Proud moment: ${topic}. Grateful for the support that made it possible.`,
-    `${topic} — a reminder that consistency and focus compound over time.`,
-    `Milestone unlocked: ${topic}. Onward to the next challenge.`
-  ];
-}
-
 async function generateDrafts(prompt) {
   if (!prompt.trim()) {
     return [];
@@ -92,21 +60,18 @@ async function generateDrafts(prompt) {
     "Write 3 distinct LinkedIn post captions (1-3 sentences each) for the topic below. " +
     "Be natural, not hashtags-only. Return ONLY a JSON array of strings, no extra text.";
 
-  try {
-    const text = await callGemini(`${instruction}\n\nTopic: ${prompt}`);
-    const parsed = parseJsonArray(text);
-    if (parsed && parsed.length) return parsed.slice(0, 3);
+  const text = await callGemini(`${instruction}\n\nTopic: ${prompt}`);
+  const parsed = parseJsonArray(text);
+  if (parsed && parsed.length) return parsed.slice(0, 3);
 
-    // Fallback: split lines
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.replace(/^\d+\.\s*/, "").trim())
-      .filter(Boolean);
-    return lines.slice(0, 3);
-  } catch (err) {
-    console.error("[content] generateDrafts failed", err.message);
-    return fallbackDrafts(prompt);
-  }
+  // Gemini returned non-JSON — split numbered lines
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\d+\.\s*/, "").trim())
+    .filter(Boolean);
+  if (lines.length) return lines.slice(0, 3);
+
+  throw new Error("Gemini returned an empty response");
 }
 
 async function reviseDraft(draft, instruction) {

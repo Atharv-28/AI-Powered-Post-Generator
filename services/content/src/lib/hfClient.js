@@ -30,18 +30,17 @@ async function generateDrafts(prompt) {
     prompt.slice(0, 300) +
     ". Return ONLY a valid JSON array of 3 strings. No markdown, no pre-text, no post-text.";
 
-  const response = await hf.textGeneration({
+  const response = await hf.chatCompletion({
     model: 'meta-llama/Meta-Llama-3-8B-Instruct',
-    inputs: instruction,
-    parameters: {
-      max_new_tokens: 400,
-      temperature: 0.8,
-      top_p: 0.9,
-      return_full_text: false
-    }
+    messages: [
+      { role: "user", content: instruction }
+    ],
+    max_tokens: 400,
+    temperature: 0.8,
+    top_p: 0.9,
   });
 
-  const text = response.generated_text || "";
+  const text = response.choices[0]?.message?.content || "";
   const parsed = parseJsonArray(text);
   if (parsed && parsed.length) return parsed.slice(0, 3);
 
@@ -64,18 +63,17 @@ async function reviseDraft(draft, instruction) {
   const prompt = `Revise this LinkedIn caption: "${text.slice(0, 400)}"\nInstruction: ${change.slice(0, 150)}\nReturn only the revised text without markdown or quotes.`;
 
   try {
-    const response = await hf.textGeneration({
+    const response = await hf.chatCompletion({
       model: 'meta-llama/Meta-Llama-3-8B-Instruct',
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: 400,
-        temperature: 0.8,
-        top_p: 0.9,
-        return_full_text: false
-      }
+      messages: [
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 400,
+      temperature: 0.8,
+      top_p: 0.9,
     });
 
-    return response.generated_text?.trim() || text;
+    return response.choices[0]?.message?.content?.trim() || text;
   } catch (err) {
     console.error("[content] reviseDraft failed", err.message);
     return text;

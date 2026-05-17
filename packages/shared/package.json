@@ -1,0 +1,5 @@
+{
+  "name": "@xai/shared",
+  "private": true,
+  "main": "index.js"
+}

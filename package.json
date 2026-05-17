@@ -1,0 +1,20 @@
+{
+  "name": "x-ai-suite",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev:web": "npm run dev -w apps/web",
+    "dev:bff": "npm run dev -w apps/bff",
+    "dev:auth": "npm run dev -w services/auth",
+    "dev:content": "npm run dev -w services/content",
+    "dev:x": "npm run dev -w services/x-connector",
+    "dev:worker": "npm run dev -w services/worker"
+  }
+}

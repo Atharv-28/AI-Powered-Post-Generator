@@ -1,6 +1,6 @@
 async function callGemini(promptText) {
   const apiKey = process.env.gemini__api_key;
-  const model = process.env.gemini__model || "gemini-2.0-flash";
+  const model = process.env.gemini__model || "gemini-1.5-flash";
 
   if (!apiKey) {
     throw new Error("Missing gemini__api_key");
@@ -18,9 +18,9 @@ async function callGemini(promptText) {
       }
     ],
     generationConfig: {
-      temperature: 0.7,
-      topP: 0.95,
-      maxOutputTokens: 1024
+      temperature: 0.8,
+      topP: 0.9,
+      maxOutputTokens: 400
     }
   };
 
@@ -56,11 +56,11 @@ async function generateDrafts(prompt) {
     return [];
   }
 
-  const instruction =
-    "Write 3 distinct LinkedIn post captions (1-3 sentences each) for the topic below. " +
-    "Be natural, not hashtags-only. Return ONLY a JSON array of strings, no extra text.";
+  const instruction = "3 distinct LinkedIn captions (max 100 words) for: " +
+    prompt.slice(0, 300) +
+    ". JSON array of 3 strings only, no markdown.";
 
-  const text = await callGemini(`${instruction}\n\nTopic: ${prompt}`);
+  const text = await callGemini(instruction);
   const parsed = parseJsonArray(text);
   if (parsed && parsed.length) return parsed.slice(0, 3);
 
@@ -79,12 +79,8 @@ async function reviseDraft(draft, instruction) {
   const change = `${instruction}`.trim();
   if (!text || !change) return text;
 
-  const prompt =
-    "Revise the LinkedIn caption below using the instruction. " +
-    "Return ONLY the revised caption text, no quotes or extra text.";
-
   try {
-    const result = await callGemini(`${prompt}\n\nCaption: ${text}\n\nInstruction: ${change}`);
+    const result = await callGemini(`Revise this LinkedIn caption: "${text.slice(0, 400)}"\nInstruction: ${change.slice(0, 150)}\nReturn only the revised text.`);
     return result || text;
   } catch (err) {
     console.error("[content] reviseDraft failed", err.message);

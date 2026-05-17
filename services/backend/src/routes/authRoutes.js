@@ -1,6 +1,6 @@
 const express = require("express");
 const crypto = require("crypto");
-const storage = require("../../auth/src/lib/storage");
+const storage = require("../../../auth/src/lib/storage");
 
 const router = express.Router();
 

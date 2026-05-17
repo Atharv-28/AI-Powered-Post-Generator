@@ -1,6 +1,6 @@
 const express = require("express");
-const storage = require("../../auth/src/lib/storage");
-const { getProfile, fetchRecentPosts, publishPost, registerImageUpload, uploadImage } = require("../../x-connector/src/lib/linkedinApi");
+const storage = require("../../../auth/src/lib/storage");
+const { getProfile, fetchRecentPosts, publishPost, registerImageUpload, uploadImage } = require("../../../x-connector/src/lib/linkedinApi");
 
 const router = express.Router();
 

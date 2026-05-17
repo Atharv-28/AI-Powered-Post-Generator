@@ -1,8 +1,14 @@
 const express = require("express");
 require("dotenv").config({ path: "../../.env" });
 
+const cors = require("cors");
+
 const app = express();
 app.use(express.json({ limit: "10mb" }));
+
+// Configure CORS to allow the frontend (Vercel) to call this backend
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+app.use(cors({ origin: FRONTEND_URL }));
 
 // Use process.env.PORT when deployed on Render/Heroku
 const port = process.env.PORT || process.env.backend__port || 4100;
@@ -17,10 +23,10 @@ storage.ensureDataDir();
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
-// Mount routes at root so existing clients keep the same paths
-app.use("/", authRoutes);
-app.use("/", createContentRoutes());
-app.use("/", connectorRoutes);
+// Mount routes using the previous BFF paths so the frontend doesn't need changes
+app.use("/oauth", authRoutes);
+app.use("/api/content", createContentRoutes());
+app.use("/api/linkedin", connectorRoutes);
 
 // Start worker (simple interval) in same process
 try {

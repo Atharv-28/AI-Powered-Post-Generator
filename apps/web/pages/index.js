@@ -29,6 +29,9 @@ export default function Home() {
     }
   }, [addToast]);
 
+  // API base (deployed backend on Render). Exposed via Vercel as NEXT_PUBLIC_API_BASE
+  const API_BASE = (typeof window !== "undefined" && process?.env?.NEXT_PUBLIC_API_BASE) || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+
   const formatLinkedInError = (data) => {
     if (!data) return "Unknown error";
     const err = data.error || data;
@@ -45,7 +48,7 @@ export default function Home() {
 
   const generateDrafts = async () => {
     addToast("info", "Generating drafts...", 4000);
-    const res = await fetch("http://localhost:4000/api/content/generate", {
+    const res = await fetch(`${API_BASE}/api/content/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt })
@@ -61,12 +64,12 @@ export default function Home() {
 
   const connectLinkedIn = () => {
     // start OAuth flow (opens auth service)
-    window.location.href = "http://localhost:4010/oauth/linkedin/start";
+    window.location.href = `${API_BASE}/oauth/linkedin/start`;
   };
 
   const loadRecentPosts = async () => {
     addToast("info", "Loading recent posts...", 4000);
-    const res = await fetch("http://localhost:4000/api/linkedin/recent-posts");
+    const res = await fetch(`${API_BASE}/api/linkedin/recent-posts`);
     const data = await res.json();
     if (data.ok) {
       setRecentPosts(data.posts || []);
@@ -78,7 +81,7 @@ export default function Home() {
 
   const publishDraft = async (text) => {
     addToast("info", "Publishing post...", 4000);
-    const res = await fetch("http://localhost:4000/api/linkedin/publish", {
+    const res = await fetch(`${API_BASE}/api/linkedin/publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -103,7 +106,7 @@ export default function Home() {
     }
 
     addToast("info", "Rewriting draft...", 4000);
-    const res = await fetch("http://localhost:4000/api/content/revise", {
+    const res = await fetch(`${API_BASE}/api/content/revise`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ draft: drafts[index], instruction })

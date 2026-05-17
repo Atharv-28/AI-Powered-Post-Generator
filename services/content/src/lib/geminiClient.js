@@ -51,11 +51,35 @@ function parseJsonArray(text) {
   }
 }
 
+function extractTopic(prompt) {
+  let t = String(prompt || "").trim();
+  if (!t) return "";
+
+  // If user wrote 'about', take the substring after the first 'about'
+  const aboutMatch = t.match(/\babout\b/i);
+  if (aboutMatch) {
+    t = t.substring(aboutMatch.index + aboutMatch[0].length).trim();
+  } else {
+    // Remove common request prefixes like 'write a post for linkedin' etc.
+    t = t.replace(/write\s+(me\s+)?(a|an)?\s*(linkedin\s+)?post(\s+for)?/i, "").trim();
+    t = t.replace(/for\s+linkedin/i, "").trim();
+  }
+
+  // Remove explicit length instructions like 'in 150 words'
+  t = t.replace(/\bin\s+\d+\s*words\b/i, "").trim();
+
+  // Truncate to a safe length
+  if (t.length > 240) t = t.slice(0, 240).trim();
+
+  return t || prompt;
+}
+
 function fallbackDrafts(prompt) {
+  const topic = extractTopic(prompt);
   return [
-    `Proud moment: ${prompt}. Grateful for the support that made it possible.`,
-    `${prompt} — a reminder that consistency and focus compound over time.`,
-    `Milestone unlocked: ${prompt}. Onward to the next challenge.`
+    `Proud moment: ${topic}. Grateful for the support that made it possible.`,
+    `${topic} — a reminder that consistency and focus compound over time.`,
+    `Milestone unlocked: ${topic}. Onward to the next challenge.`
   ];
 }
 

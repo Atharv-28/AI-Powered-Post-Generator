@@ -1,5 +1,5 @@
 const express = require("express");
-const { generateDrafts, reviseDraft } = require("../lib/geminiClient");
+const { generateDrafts, reviseDraft } = require("../lib/openaiClient");
 const { generateImage } = require("../lib/imageClient");
 
 function createContentRoutes() {

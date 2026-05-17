@@ -1,43 +1,42 @@
-async function callGemini(promptText) {
-  const apiKey = process.env.gemini__api_key;
-  const model = process.env.gemini__model || "gemini-1.5-flash";
+async function callOpenAI(promptText) {
+  const apiKey = process.env.openai__api_key;
+  const model = process.env.openai__model || "gpt-4o-mini";
 
   if (!apiKey) {
-    throw new Error("Missing gemini__api_key");
+    throw new Error("Missing openai__api_key");
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model
-  )}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const url = "https://api.openai.com/v1/chat/completions";
 
   const body = {
-    contents: [
+    model: model,
+    messages: [
       {
         role: "user",
-        parts: [{ text: promptText }]
+        content: promptText
       }
     ],
-    generationConfig: {
-      temperature: 0.8,
-      topP: 0.9,
-      maxOutputTokens: 400
-    }
+    temperature: 0.8,
+    top_p: 0.9,
+    max_tokens: 400
   };
 
   const resp = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
     body: JSON.stringify(body)
   });
 
   const json = await resp.json();
   if (!resp.ok) {
-    const message = json?.error?.message || "Gemini request failed";
+    const message = json?.error?.message || "OpenAI request failed";
     throw new Error(message);
   }
 
-  const text =
-    json?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "";
+  const text = json?.choices?.[0]?.message?.content || "";
   return text.trim();
 }
 
@@ -60,18 +59,18 @@ async function generateDrafts(prompt) {
     prompt.slice(0, 300) +
     ". JSON array of 3 strings only, no markdown.";
 
-  const text = await callGemini(instruction);
+  const text = await callOpenAI(instruction);
   const parsed = parseJsonArray(text);
   if (parsed && parsed.length) return parsed.slice(0, 3);
 
-  // Gemini returned non-JSON — split numbered lines
+  // OpenAI returned non-JSON — split numbered lines
   const lines = text
     .split(/\r?\n/)
     .map((line) => line.replace(/^\d+\.\s*/, "").trim())
     .filter(Boolean);
   if (lines.length) return lines.slice(0, 3);
 
-  throw new Error("Gemini returned an empty response");
+  throw new Error("OpenAI returned an empty response");
 }
 
 async function reviseDraft(draft, instruction) {
@@ -80,7 +79,7 @@ async function reviseDraft(draft, instruction) {
   if (!text || !change) return text;
 
   try {
-    const result = await callGemini(`Revise this LinkedIn caption: "${text.slice(0, 400)}"\nInstruction: ${change.slice(0, 150)}\nReturn only the revised text.`);
+    const result = await callOpenAI(`Revise this LinkedIn caption: "${text.slice(0, 400)}"\nInstruction: ${change.slice(0, 150)}\nReturn only the revised text without markdown or quotes.`);
     return result || text;
   } catch (err) {
     console.error("[content] reviseDraft failed", err.message);

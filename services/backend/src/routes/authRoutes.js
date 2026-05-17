@@ -13,7 +13,7 @@ function base64url(buffer) {
   return buffer.toString("base64").replace(/=+$/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
-router.get("/oauth/linkedin/start", (req, res) => {
+router.get("/linkedin/start", (req, res) => {
   if (!CLIENT_ID || !REDIRECT_URI) {
     return res.status(500).json({ ok: false, message: "Missing linkedin__client_id or linkedin__redirect_uri in env" });
   }
@@ -34,7 +34,7 @@ router.get("/oauth/linkedin/start", (req, res) => {
   res.redirect(authUrl.toString());
 });
 
-router.get("/oauth/linkedin/callback", async (req, res) => {
+router.get("/linkedin/callback", async (req, res) => {
   const { code, state, error, error_description } = req.query;
   console.log("[auth] linkedin oauth callback", { state, has_code: Boolean(code), error, error_description });
 

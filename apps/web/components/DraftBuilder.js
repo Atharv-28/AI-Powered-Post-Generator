@@ -1,3 +1,5 @@
+import { FiEdit3, FiClock } from "react-icons/fi";
+
 export default function DraftBuilder({
   prompt,
   onPromptChange,
@@ -19,12 +21,18 @@ export default function DraftBuilder({
         placeholder="Write a post about..."
       />
       <div className="actions">
-        <button className="btn primary" onClick={onGenerateDrafts} disabled={!prompt.trim()}>
-          Generate Drafts
+        <button className="btn primary block" onClick={onGenerateDrafts} disabled={!prompt.trim()}>
+          <span className="btn-content">
+            <FiEdit3 className="btn-icon" aria-hidden="true" />
+            <span>Generate Drafts</span>
+          </span>
         </button>
         <div className="tooltip">
           <button className="btn" onClick={onLoadRecent} disabled>
-            Load Recent Posts
+            <span className="btn-content">
+              <FiClock className="btn-icon" aria-hidden="true" />
+              <span>Load Recent Posts</span>
+            </span>
           </button>
           <span className="tooltip-text">{disableRecentReason}</span>
         </div>

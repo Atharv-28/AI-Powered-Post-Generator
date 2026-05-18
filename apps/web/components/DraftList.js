@@ -1,3 +1,5 @@
+import { FiRefreshCw, FiSend } from "react-icons/fi";
+
 export default function DraftList({ drafts, editPrompts, onEditPromptChange, onRevise, onPublish }) {
   return (
     <section className="card">
@@ -18,12 +20,18 @@ export default function DraftList({ drafts, editPrompts, onEditPromptChange, onR
                   placeholder="Request changes (tone, length, add CTA, etc.)"
                 />
                 <button className="btn" onClick={() => onRevise(idx)}>
-                  Update Draft
+                  <span className="btn-content">
+                    <FiRefreshCw className="btn-icon" aria-hidden="true" />
+                    <span>Update Draft</span>
+                  </span>
                 </button>
               </div>
             </div>
             <button className="btn ghost" onClick={() => onPublish(draft)}>
-              Publish
+              <span className="btn-content">
+                <FiSend className="btn-icon" aria-hidden="true" />
+                <span>Publish</span>
+              </span>
             </button>
           </li>
         ))}
